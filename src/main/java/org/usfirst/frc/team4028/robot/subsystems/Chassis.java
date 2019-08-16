@@ -71,7 +71,9 @@ public class Chassis extends Subsystem{
     	// ===================
     	// Left Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
-    	_leftDriveMaster = new TalonSRX(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR);
+		_leftDriveMaster = new TalonSRX(RobotMap.LEFT_DRIVE_MASTER_CAN_BUS_ADDR);
+		_leftDriveMaster.configFactoryDefault();
+		
     	_leftDriveMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder); // set encoder to be feedback device
     	//_leftDriveMaster.configEncoderCodesPerRev(1097);
 		_leftDriveMaster.setSensorPhase(false);  							// do not invert encoder feedback
@@ -88,7 +90,8 @@ public class Chassis extends Subsystem{
 		_leftDriveMaster.config_kD(0, D_GAIN);
 
 		_leftDriveSlave = new TalonSRX(RobotMap.LEFT_DRIVE_SLAVE1_CAN_BUS_ADDR);
-	   	_leftDriveSlave.follow(_leftDriveMaster);	// set this mtr ctrlr as a slave
+		   _leftDriveSlave.configFactoryDefault();
+		   _leftDriveSlave.follow(_leftDriveMaster);	// set this mtr ctrlr as a slave
 		
 		_leftDriveSlave.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
    		_leftDriveSlave.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
@@ -97,11 +100,12 @@ public class Chassis extends Subsystem{
     	// Right Drive Motors, Tandem Pair, looking out motor shaft: CW = Drive FWD
     	// ===================
 		_rightDriveMaster = new TalonSRX(RobotMap.RIGHT_DRIVE_MASTER_CAN_BUS_ADDR);
-    	_leftDriveMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
+		_rightDriveMaster.configFactoryDefault();
+    	_rightDriveMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);	// set encoder to be feedback device
 		
-	
-    	_leftDriveMaster.setSensorPhase(false);							// do not invert encoder feedback
+    	_rightDriveMaster.setSensorPhase(false);							// do not invert encoder feedback
 		_rightDriveMaster.setInverted(true);
+		
 		
 		_rightDriveMaster.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
    		_rightDriveMaster.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
@@ -115,6 +119,8 @@ public class Chassis extends Subsystem{
 		_rightDriveMaster.config_kD(0, D_GAIN);
 
 		_rightDriveSlave = new TalonSRX(RobotMap.RIGHT_DRIVE_SLAVE1_CAN_BUS_ADDR);
+		_rightDriveSlave.configFactoryDefault();
+		_rightDriveSlave.setInverted(true);
 		_rightDriveSlave.follow(_rightDriveMaster);	// set this mtr ctrlr as a slave
 		
 		
@@ -162,7 +168,7 @@ public class Chassis extends Subsystem{
 		// if acc/dec mode is enabled
 		if(_isAccelDecelEnabled) {
 			_previousThrottleCmdAccDec = _currentThrottleCmdAccDec;
-			DriverStation.reportWarning("GettingArcadeDrCmd",true);
+			//DriverStation.reportWarning("GettingArcadeDrCmd",true);
 			
 			//implement speed scaling
 			_arcadeDriveThrottleCmdAdj = calcAccelDecelThrottleCmd(_currentThrottleCmdScaled, _previousThrottleCmdScaled, _lastCmdChgTimeStamp);
@@ -179,12 +185,14 @@ public class Chassis extends Subsystem{
 		_arcadeDriveTurnCmdAdj = newTurnCmdScaled;
 		
 		// send cmd to mtr controllers
-		
+		_leftDriveMaster.set(ControlMode.PercentOutput, _arcadeDriveThrottleCmdAdj - _arcadeDriveTurnCmdAdj);
+		_rightDriveMaster.set(ControlMode.PercentOutput, _arcadeDriveThrottleCmdAdj + _arcadeDriveTurnCmdAdj);
 	}
 	
 	public void TankDrive(double leftCmd, double rightCmd) {
 		
-		_robotDrive.tankDrive(leftCmd, rightCmd);
+		_leftDriveMaster.set(ControlMode.PercentOutput, leftCmd);
+		_rightDriveMaster.set(ControlMode.PercentOutput, rightCmd);
 	}
 	
 	public void SetMotionMagicTargetPosition(double leftPosition, double rightPosition) {
@@ -222,14 +230,14 @@ public class Chassis extends Subsystem{
 				_shifterSolenoid.set(RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION);
 				_shifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_HIGH_GEAR_POSITION;
 				
-    			DriverStation.reportWarning("Shift into HIGH gear", false);
+    			//DriverStation.reportWarning("Shift into HIGH gear", false);
 				break;
 			
 			case LOW_GEAR:
 				_shifterSolenoid.set(RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION);
 				_shifterSolenoidPosition = RobotMap.SHIFTER_SOLENOID_LOW_GEAR_POSITION;
 				
-    			DriverStation.reportWarning("Shift into LOW gear", false);
+    			//DriverStation.reportWarning("Shift into LOW gear", false);
 				break;
 		}
 	}

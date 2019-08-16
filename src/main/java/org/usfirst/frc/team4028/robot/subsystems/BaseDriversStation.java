@@ -34,8 +34,10 @@ abstract class BaseDriversStation {
 	private DriversStationInputs _currentValues;
 	private DriversStationInputs _previousValues;
 	
+	
 	private final double JOYSTICK_THRESHHOLD = 0.05;
 
+	
 	//============================================================================================
 	// constructors follow
 	//============================================================================================

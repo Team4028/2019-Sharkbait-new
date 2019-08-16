@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 //------------------------------------------------------
 //
 public class DriversStation extends BaseDriversStation {
-	public static DriversStation _instance;
+	public static DriversStation _instance = new DriversStation();
 	
 	public static DriversStation getInstance() {
 		return _instance;
@@ -28,6 +28,7 @@ public class DriversStation extends BaseDriversStation {
 		// call base class constructor
 		super(RobotMap.DRIVER_GAMEPAD_USB_PORT, RobotMap.OPERATOR_GAMEPAD_USB_PORT, RobotMap.ENGINEERING_GAMEPAD_USB_PORT);
 	}
+	
 	
 	/*
 	==========================================================================

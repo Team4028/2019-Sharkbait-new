@@ -19,6 +19,7 @@ import org.usfirst.frc.team4028.robot.utilities.GeneralUtilities;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -27,7 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * 		Season: FRC 2017 "First Steamworks"
  * 		Robot:	Competition Chassis
  */
-public class Robot extends IterativeRobot {
+public class Robot extends TimedRobot {
 	// this value is printed on the Driver's Station message window on startup
 	private static final String ROBOT_NAME = "COMPETITION Chassis";
 	
@@ -42,6 +43,7 @@ public class Robot extends IterativeRobot {
 	
 	private DashboardInputs _dashboardInputs = DashboardInputs.getInstance();
 	private DriversStation _driversStation = DriversStation.getInstance();
+	
 	
 	private AutonExecuter _autoModeExecuter = null;
 	
@@ -80,7 +82,6 @@ public class Robot extends IterativeRobot {
 	HangRetrievalGear _hangRetrievalGear;
 	HitHopper _hitHopper;
 	TurnAndShoot _turnAndShoot;
-	//TwoGear _twoGearAuton;
 	
 	// ===========================================================
 	//   Define class level working variables
@@ -302,13 +303,11 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	// Step 0: Get the DASHBOARD Input values for the current scan cycle
     	// =====================================
-    	_driversStation.ReadCurrentScanCycleValues();
-    	
+		_driversStation.ReadCurrentScanCycleValues();
     	// =====================================
     	// Step 1: execute different steps based on current "telop mode"
     	// =====================================
-    	switch (_teleopMode) {
-    		case STANDARD:	  
+    	 
     			//DriverStation.reportError(Double.toString(_navX.getYaw()), false);
     			//===========================================================================
     			//Switchable Cameras
@@ -491,7 +490,8 @@ public class Robot extends IterativeRobot {
 		      		// 1st priority is zeroing
 		      		// 	Note: Zeroing will take longer than 1 scan cycle to complete so
 		      		//			we must treat it as a Reentrant function
-		      		//			and automatically recall it until complete
+					  //			and automatically recall it until complete
+				  
 		    		_gearHandler.ZeroGearTiltAxisReentrant();
 		    	}
 		      	else if (_driversStation.getIsDriver_RezeroGearTilt_ButtonJustPressed()) {
@@ -555,20 +555,9 @@ public class Robot extends IterativeRobot {
     			// climb is now a manual mode for Pittsburgh
     			_climber.RunMotorUsingJoyStick(_driversStation.getOperator_ClimberSpeed_JoystickCmd());
     	    	
-		      	break;	// end of _telopMode = STANDARD
+		      	// end of _telopMode = STANDARD
       		
-    		case HANG_GEAR_SEQUENCE_MODE:
-    			
-    			// in this teleop mode the driver & operator do not have control until
-    			// the sequence completes or it times out
-    			boolean isStillRunning = _hangGearController.ExecuteRentrant();
-    			
-    			// if not still running, switch back to std teleop mode
-    			//	(ie: give control back to the driver & operator)
-    			if(!isStillRunning) {
-    				_teleopMode = TELEOP_MODE.STANDARD;
-    			}
-    			break;	// end of _telopMode = HANG_GEAR_SEQUENCE_MODE   			
+    						
     	}	// end of switch statement
 
     	// =====================================
@@ -576,11 +565,10 @@ public class Robot extends IterativeRobot {
     	// =====================================
     	
     	// Refresh Dashboard
-    	OutputAllToSmartDashboard();
+    	
     	
     	// Optionally Log Data
-    	WriteLogData();
-	}
+    	
 	
 	//--------------------------------------------------------------------------------------------------------------------------------------------------------
 	//  Utility / Helper Methods Follow

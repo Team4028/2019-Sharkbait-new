@@ -39,7 +39,7 @@ public class GearHandler extends Subsystem {
 	// --------------------------------------------------------
 	// define Tilt Motor PID constants
 	private static final int 	TILT_PID_P_PROFILE = 0;
-	private static final double TILT_PID_P_CONSTANT = 1.6;
+	private static final double TILT_PID_P_CONSTANT = 1.0; //1.6
 	private static final double TILT_PID_I_CONSTANT = 0.0;
 	private static final double TILT_PID_D_CONSTANT = 50.0;
 	private static final double TILT_PID_RAMP_RATE = 0.1;
@@ -67,10 +67,12 @@ public class GearHandler extends Subsystem {
 	
 	private static final double GEAR_TILT_AXIS_HOME_POSITION_IN_ROTATIONS = 0;
 	private static final double GEAR_TILT_SCORING_POSITION_IN_ROTATIONS = 0.1;
+	private static final int GEAR_TILT_SCORING_POSITION_IN_NU = 400;
 	private static final double GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS = 00.48;
-	private static final double TARGET_DEADBAND = 00.03;
+	private static final int GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_NU = 1000;
+	private static final double TARGET_DEADBAND = 122;
 	
-	private static final double GEAR_MOVE_TO_HOME_VELOCITY_CMD = -0.40;   //set
+	private static final double GEAR_MOVE_TO_HOME_VELOCITY_CMD = -0.20;   //set
 	private static final long GEAR_MAXIMUM_MOVE_TO_HOME_TIME_IN_MSEC = 5000;
 	private String _gearTiltState;
 	
@@ -87,6 +89,7 @@ public class GearHandler extends Subsystem {
 	private GearHandler() {
 		// Tilt Motor
 		_gearTiltMotor = new TalonSRX(RobotMap.GEAR_TILT_CAN_BUS_ADDR);
+		_gearTiltMotor.configFactoryDefault();
 		//_gearTiltMotor.changeControlMode(CANTalon.TalonControlMode.PercentVbus);	// open loop throttle
 		_gearTiltMotor.setNeutralMode(NeutralMode.Coast);;							// default to brake mode DISABLED
 		_gearTiltMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);// set encoder to be feedback device
@@ -94,10 +97,10 @@ public class GearHandler extends Subsystem {
 		_gearTiltMotor.selectProfileSlot(TILT_PID_P_PROFILE,0);
 		_gearTiltMotor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
 		
-		_gearTiltMotor.configNominalOutputForward(0-0.0f, 0);
+		_gearTiltMotor.configNominalOutputForward(0.0f, 0);
 		_gearTiltMotor.configNominalOutputReverse(0.0f, 0);
-		_gearTiltMotor.configPeakOutputForward(TILT_MAX_V_UP_TILT, 0);
-		_gearTiltMotor.configPeakOutputReverse(TILT_MAX_V_DOWN_TILT, 0); 
+		_gearTiltMotor.configPeakOutputForward(TILT_MAX_V_DOWN_TILT, 0);
+		_gearTiltMotor.configPeakOutputReverse(TILT_MAX_V_UP_TILT, 0); 
 
       
       //_gearTiltMotor.config_kF(TILT_PID_P_PROFILE, , timeoutMs);
@@ -146,8 +149,8 @@ public class GearHandler extends Subsystem {
     				// check for timeout
     				long elapsedTime = System.currentTimeMillis() - _gearTiltAxisStateStartTime;
     				if (elapsedTime < GEAR_MAXIMUM_MOVE_TO_HOME_TIME_IN_MSEC) {
-    					
-    					_gearTiltMotor.set(ControlMode.PercentOutput, GEAR_MOVE_TO_HOME_VELOCITY_CMD);
+						DriverStation.reportWarning("GettingArcadeDrCmd",true);
+						_gearTiltMotor.set(ControlMode.PercentOutput, GEAR_MOVE_TO_HOME_VELOCITY_CMD);
     				} else {
     					_gearTiltAxisZeroCurrentState = GEAR_TILT_HOMING_STATE.TIMEOUT;
     					DriverStation.reportWarning("TiltAxis (Zero State) [MOVING_TO_HOME] ==> [TIMEOUT]", false);
@@ -191,19 +194,21 @@ public class GearHandler extends Subsystem {
     }
     
     public void MoveGearToScorePosition() {
-    	MoveTiltAxisPIDP(GEAR_TILT_SCORING_POSITION_IN_ROTATIONS);
+		//MoveTiltAxisPIDP(GEAR_TILT_SCORING_POSITION_IN_ROTATIONS);
+		MoveTiltAxisPIDP(GEAR_TILT_SCORING_POSITION_IN_NU);
     	_isLastTiltMoveToFloorCallComplete = true;
     	
     	//DriverStation.reportWarning("Move Gear To Score Position", false);
     }
     
     public void MoveGearToFloorPositionReentrant() {
-		if(_gearTiltMotor.getSelectedSensorPosition() >= (GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS - TARGET_DEADBAND)) {
+		if(_gearTiltMotor.getSelectedSensorPosition() >= (GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_NU - TARGET_DEADBAND))
+		{
 			// gravity fall to floor
 			MoveTiltAxisVBus(0.0);
 			_isLastTiltMoveToFloorCallComplete = true;
 		} else {
-			MoveTiltAxisPIDP(GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_ROTATIONS);
+			MoveTiltAxisPIDP(GEAR_TILT_CHANGE_TO_V_BUS_POSITION_IN_NU);
 			_isLastTiltMoveToFloorCallComplete = false;
 		}
 		
